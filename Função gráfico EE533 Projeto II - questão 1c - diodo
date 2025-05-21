@@ -1,0 +1,79 @@
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.ticker import MultipleLocator
+
+# --- Dados de referência do diodo ---
+V1 = 0.7       # Tensão de limiar (em V) — início da condução do diodo
+V2 = 0.9       # Tensão correspondente a uma corrente conhecida
+I2 = 20.0      # Corrente (em mA) para V2; I2 =I2real*1000
+
+# --- Cálculo da resistência dinâmica do diodo ---
+rd = (V2 - V1) / I2  # Inclinação da reta (Ohm), entre os pontos (V1, 0) e (V2, I2)
+
+# --- Geração de dados para a curva I x V (região linear do modelo) ---
+V = np.linspace(0.7, 1.0, 100)       # Vetor de tensões de 0.7 V a 1.0 V (100 pontos)
+I = (V - V1) / rd                    # Corrente correspondente, pela equação da reta
+
+# --- Criação da figura ---
+plt.figure(figsize=(8, 5))           # Define tamanho da figura (8 x 5 polegadas)
+
+# --- Plota a curva linear do diodo (a partir de 0.7 V) ---
+plt.plot(V, I, label='', color='blue')
+
+# --- Plota a região sem condução do diodo (0 a 0.7 V, corrente = 0) ---
+plt.plot([0, 0.7], [0.0001, 0.0001], color='blue', label='Modelo linear aproximado')
+
+# --- Linha vertical para indicar a tensão de limiar ---
+plt.axvline(0.7, color='gray', linestyle='--', linewidth=1, label='Tensão de condução (0,7 V)')
+
+# --- Títulos e rótulos dos eixos ---
+plt.title('Circuito equivalente linear por partes')   # Título do gráfico
+plt.xlabel('V (V)')                                   # Rótulo do eixo X
+plt.ylabel('I (mA)')                                  # Rótulo do eixo Y 
+
+# --- Limites dos eixos ---
+plt.xlim(-0.0, 1.0)          # Limite do eixo X de -0.0 a 1.0 V
+plt.ylim(0, 22)               # Limite do eixo Y de 0 a 22 mA
+plt.xticks(np.arange(0, 1.05, 0.1))  # Marcadores no eixo X de 0 em 0.1 V
+
+# --- Acesso ao objeto de eixo para configurar ticks e grid ---
+ax = plt.gca()  # Pega o eixo atual para customizações diretas
+
+# --- Configura os marcadores principais e secundários no eixo Y ---
+ax.yaxis.set_major_locator(MultipleLocator(4))     # Ticks principais de 4 em 4
+ax.yaxis.set_minor_locator(MultipleLocator(2))     # Ticks secundários (submarcadores) de 2 em 2
+
+# --- Customiza a aparência dos submarcadores (sem labels, mas com traço visual) ---
+ax.tick_params(axis='y', which='minor', length=4, color='gray')  # Pequenos traços visuais
+
+# --- Grade (linhas de referência) ---
+ax.grid(True, which='major', color='lightgray', linestyle='-', linewidth=0.7)   # Grade dos marcadores principais
+ax.grid(True, which='minor', color='lightgray', linestyle='--', linewidth=0.5)  # Grade tracejada para submarcadores
+
+#########################
+# # --- Curva exponencial (modelo real de diodo genérico) ---
+# # Parâmetros ajustados para passar pelos pontos desejados
+# Is = (1e-7)*1000      # Corrente de saturação (A)
+# n = 3                 # Fator de idealidade
+# Vt = 0.025            # Tensão térmica (V)
+# # --- Plota a região sem condução do diodo (0 a 0.3 V, corrente = 0) ---
+# plt.plot([0, 0.3], [0.05, 0.05], color='red')
+# # Geração da curva com a equação de Shockley
+# V_exp = np.linspace(0.3, 1.0, 500)
+# I_exp = Is * (np.exp(V_exp / (n * Vt)) - 1)
+# I_exp = np.clip(I_exp, 0, None)  # Evita valores negativos
+# # Legenda
+# plt.plot(V_exp, I_exp, color='red', label='Modelo exponencial')
+##########################
+
+# --- Exibe a legenda e finaliza o layout ---
+plt.legend()
+plt.tight_layout()
+
+# --- Mostra o gráfico na tela ---
+plt.show()
+
+rd = rd*1000 # corrige o valor de rd com o valor da corrente em mA 
+
+# --- Imprime o valor da resistência dinâmica aproximada em ohms ---
+print("Rd =", int(rd), "Ω")
