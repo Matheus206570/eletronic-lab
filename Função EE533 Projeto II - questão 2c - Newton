@@ -1,0 +1,50 @@
+import numpy as np
+import time
+
+# Parâmetros- Circuito Regulador
+V_fonte = 1.0 # Tensão da fonte
+R=1000        # Resistência
+Is = 1e-15    # Corrente de Saturação
+Vt = 0.025    # Tensão Térmica
+n = 1         # Constante
+
+# Definição de f(Vd) e f'(Vd)
+def f(Vd):
+    return Is * (np.exp(Vd / (n*Vt))- 1) - (V_fonte- Vd) / R
+def df(Vd):
+    return Is * (np.exp(Vd / Vt) / (n*Vt)) + 1 / R
+
+# Método de Newton-Raphson
+def iteracao(Vd_inicial, dif, max_iter):
+    Vd = Vd_inicial # Chute inicial 
+    for i in range(max_iter):
+        f_Vd = f(Vd) # Calcula o valor da função f(Vd) no ponto
+        df_Vd = df(Vd) # Calcula o valor da função(derivada) f'(Vd) no ponto
+        if abs(f_Vd) < dif:
+            return Vd # Se convergiu, retorna a solução encontrada
+        Vd =Vd-f_Vd/df_Vd
+        Id = Is * (np.exp(Vd / Vt)- 1)
+        print(f"Iteração n° {i+1}: Vd = {Vd:.6f}, Id = {Id:.6e}, f(Vd) = {f_Vd:.6e}, df(Vd) = {df_Vd:.6e}")
+    return None # Se não convergir
+
+# Parâmetros do método
+Vd_inicial = 0.6
+dif = 1e-7 # Critéio de convergência do método (precisão)
+max_iter = 30 # limite de iterações para convergir
+
+start_time = time.time()  # Início da medição do tempo de execução
+
+# Calculo da tensão do diodo usando o método iterativo pelo Método de Newton-Raphson
+print("---- Método iterativo por Newton-Raphson ----")
+Vd =iteracao(Vd_inicial, dif, max_iter)
+
+end_time = time.time()  # Fim da medição do tempo de execução
+elapsed_time = end_time - start_time  # Tempo total
+
+if Vd is not None:
+    Id = Is * (np.exp(Vd / Vt)- 1)
+    print(f"\nTensão do diodo Vd: {Vd:.6f} V")
+    print(f"Corrente do diodo Id: {Id:.6e} A")
+    print(f"Tempo de execução: {elapsed_time:.6e} segundos")
+else:
+    print("Não foi possível encontrar uma solução dentro do número máximo de iterações.")
